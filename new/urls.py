@@ -35,6 +35,29 @@ urlpatterns = [
     path('api/companies/<int:pk>/deatail/', company_detail, name='company-detail'),
     path('api/companies/<int:pk>/delete/', company_delete, name='company-delete'), 
 
+    path('categories/create/', category_create, name='category-create'),
+    path('categories/list/', category_list, name='category-list'),
+    path('category/<int:pk>/edit/', category_edit, name='category-edit'),
+    path('category/<int:pk>/detail/', category_detail, name='category_detail'),
+    path('category/<int:pk>/delete/', category_delete, name='category_delete'),
+
+
+    path('company/category/list/', list_categories_and_companies, name='list-categories-and-companies'),
+    
+    
+    path('products/create/<int:company_id>/', create_product, name='create_product'),
+    path('products/company/<int:company_id>/', list_products, name='list_products_by_company'),
+    path('api/products/', list_products1, name='list_products'),
+    path('product/<int:product_id>/', product_detail, name='product_detail'),
+
+
+    path('companies/category/<int:category_id>/', companies_by_category, name='companies-by-category'),
+    path('products/category/<int:category_id>/company/<int:company_id>/', products_by_company_and_category, name='products-by-company-and-category'),
+
+    path('product/<int:product_id>/add_to_favorites/', add_to_favorites, name='add_to_favorites'),
+    path('user/<int:user_id>/favorites/', list_user_favorites, name='list_user_favorites'),
+ 
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

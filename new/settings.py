@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -133,3 +135,16 @@ CORS_ORIGIN_ALLOW_ALL=True
 
 
 AUTH_USER_MODEL = 'myapp.CustomUser'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),  # Set token expiry (e.g., 1 hour)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # Refresh token lifetime (e.g., 7 days)
+    'ROTATE_REFRESH_TOKENS': False,  # Whether to rotate the refresh token
+    'BLACKLIST_AFTER_ROTATION': True,  # Blacklist the old refresh token after a refresh
+    'ALGORITHM': 'HS256',  # Default algorithm
+    'SIGNING_KEY': 'your-secret-key',  # Secret key for signing JWT tokens
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),  # Bearer token in the header
+    'USER_ID_FIELD': 'id',  # Use the 'id' field from your user model
+    'USER_ID_CLAIM': 'user_id',  # The claim name for the user ID
+}

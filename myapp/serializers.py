@@ -69,3 +69,81 @@ class CompanySerializer(serializers.ModelSerializer):
             representation['image'] = request.build_absolute_uri(representation['image'])
         
         return representation
+    
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'image','description']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        
+        # Build absolute URL for the image field
+        if instance.image:
+            representation['image'] = request.build_absolute_uri(instance.image.url)
+        else:
+            representation['image'] = None  # Return None if no image is available
+
+        return representation
+    
+class ProductSerializer(serializers.ModelSerializer):
+    # images = serializers.SerializerMethodField()
+    # pdf = serializers.SerializerMethodField()
+    company_name = serializers.SerializerMethodField()  # Add a field for company name
+
+    class Meta:
+        model = Product
+        fields = ['id',
+            'title', 'description', 'images','image1','image2','image3' ,'pdf', 'review', 
+            'special_feature', 'control_unit', 'category', 'weight', 
+            'amputation_level', 'price', 'company_id', 'company_name',  # Include company_name
+            'favorites', 'add_to_cart'
+        ]
+
+    def get_images(self, obj):
+        request = self.context.get('request')
+        if obj.images and request:
+            return request.build_absolute_uri(obj.images.url)
+        return None
+    def get_image1(self, obj):
+        request = self.context.get('request')
+        if obj.image1 and request:
+            return request.build_absolute_uri(obj.image1.url)
+        return None
+    def get_image2(self, obj):
+        request = self.context.get('request')
+        if obj.image2 and request:
+            return request.build_absolute_uri(obj.image2.url)
+        return None
+    def get_image3(self, obj):
+        request = self.context.get('request')
+        if obj.image3 and request:
+            return request.build_absolute_uri(obj.image3.url)
+        return None
+
+    def get_pdf(self, obj):
+        request = self.context.get('request')
+        if obj.pdf and request:
+            return request.build_absolute_uri(obj.pdf.url)
+        return None
+
+    def get_company_name(self, obj):
+        if obj.company_id is not None:
+            try:
+                company = Company.objects.get(id=obj.company_id)
+                return company.company_name  # Assuming the Company model has a 'name' field
+            except Company.DoesNotExist:
+                return None  # Return None if the company does not exist
+        return None  # Return None if company_id is None
+    
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    product = ProductSerializer()
+
+    class Meta:
+        model = Favorite
+        fields = ['product']
+
