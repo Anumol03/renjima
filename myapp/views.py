@@ -198,7 +198,7 @@ def list_categories_and_companies(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+
 def create_product(request, company_id):
     data = request.data.copy()  # Make a mutable copy of the request data
 
@@ -299,7 +299,7 @@ def product_detail(request, product_id):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])  # This will allow unauthenticated access, but token is still required for authenticated users
+  # This will allow unauthenticated access, but token is still required for authenticated users
 def add_to_favorites(request, product_id):
     if request.user.is_authenticated:
         print(f"Authenticated user: {request.user.username}")
