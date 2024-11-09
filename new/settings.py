@@ -137,7 +137,7 @@ CORS_ORIGIN_ALLOW_ALL=True
 AUTH_USER_MODEL = 'myapp.CustomUser'
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),  # Set token expiry (e.g., 1 hour)
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),  # Set token expiry (e.g., 1 hour)
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # Refresh token lifetime (e.g., 7 days)
     'ROTATE_REFRESH_TOKENS': False,  # Whether to rotate the refresh token
     'BLACKLIST_AFTER_ROTATION': True,  # Blacklist the old refresh token after a refresh
@@ -147,4 +147,9 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),  # Bearer token in the header
     'USER_ID_FIELD': 'id',  # Use the 'id' field from your user model
     'USER_ID_CLAIM': 'user_id',  # The claim name for the user ID
+}
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
 }

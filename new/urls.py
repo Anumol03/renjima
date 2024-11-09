@@ -54,8 +54,8 @@ urlpatterns = [
     path('companies/category/<int:category_id>/', companies_by_category, name='companies-by-category'),
     path('products/category/<int:category_id>/company/<int:company_id>/', products_by_company_and_category, name='products-by-company-and-category'),
 
-    path('product/<int:product_id>/add_to_favorites/', add_to_favorites, name='add_to_favorites'),
-    path('user/<int:user_id>/favorites/', list_user_favorites, name='list_user_favorites'),
+    path('product/<int:product_id>/add_to_favorites/', toggle_favorite, name='add_to_favorites'),
+    path('user/favorites/', favorite_list, name='list_user_favorites'),
  
 
 ]

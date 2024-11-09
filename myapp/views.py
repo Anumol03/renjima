@@ -77,6 +77,7 @@ def login_view(request):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def company_create(request):
     serializer = CompanySerializer(data=request.data, context={'request': request})  # Pass request context
     if serializer.is_valid():
@@ -86,12 +87,14 @@ def company_create(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def company_list(request):
     companies = Company.objects.all()  # Retrieve all companies
     serializer = CompanySerializer(companies, many=True, context={'request': request})  # Pass request context
     return Response({'status':'ok','message':'company retrieved successfully','data':serializer.data}, status=status.HTTP_200_OK)
 
 @api_view(['PUT'])
+@permission_classes([AllowAny])
 def company_edit(request, pk):
     try:
         company = Company.objects.get(pk=pk)  # Retrieve the company by ID
@@ -106,6 +109,7 @@ def company_edit(request, pk):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def company_detail(request, pk):
     try:
         company = Company.objects.get(pk=pk)  # Retrieve the company by ID
@@ -117,6 +121,7 @@ def company_detail(request, pk):
 
 
 @api_view(['DELETE'])
+@permission_classes([AllowAny])
 def company_delete(request, pk):
     try:
         company = Company.objects.get(pk=pk)  # Retrieve the company by ID
@@ -127,6 +132,7 @@ def company_delete(request, pk):
     
 
 @api_view(['POST'])  # Only allow POST method
+@permission_classes([AllowAny])
 def category_create(request):
     serializer = CategorySerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
@@ -135,12 +141,14 @@ def category_create(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])  # Only allow GET method
+@permission_classes([AllowAny])
 def category_list(request):
     categories = Category.objects.all()  # Retrieve all categories
     serializer = CategorySerializer(categories, many=True, context={'request': request})  # Serialize the data
     return Response({'status':'ok','message':'data retrived successfully','data':serializer.data})  # Return serialized data
 
 @api_view(['PUT'])  # Allow only PUT method
+@permission_classes([AllowAny])
 def category_edit(request, pk):
     try:
         category = Category.objects.get(pk=pk)  # Retrieve the category by primary key
@@ -155,6 +163,7 @@ def category_edit(request, pk):
     
     return Response({'status': 'error', 'message': 'Invalid data', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 @api_view(['GET'])  # Allow only GET method
+@permission_classes([AllowAny])
 def category_detail(request, pk):
     try:
         category = Category.objects.get(pk=pk)  # Retrieve the category by primary key
@@ -166,6 +175,7 @@ def category_detail(request, pk):
 
 
 @api_view(['DELETE'])  # Allow only DELETE method
+@permission_classes([AllowAny])
 def category_delete(request, pk):
     try:
         category = Category.objects.get(pk=pk)  # Retrieve the category by primary key
@@ -175,6 +185,7 @@ def category_delete(request, pk):
         return Response({'status': 'error', 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])  # Only allow GET method
+@permission_classes([AllowAny])
 def list_categories_and_companies(request):
     # Retrieve all categories
     categories = Category.objects.all()
@@ -198,7 +209,7 @@ def list_categories_and_companies(request):
 
 
 @api_view(['POST'])
-
+@permission_classes([AllowAny])
 def create_product(request, company_id):
     data = request.data.copy()  # Make a mutable copy of the request data
 
@@ -222,6 +233,7 @@ def create_product(request, company_id):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def list_products(request, company_id=None):
     if company_id:
         # Filter products by company_id if provided
@@ -237,6 +249,7 @@ def list_products(request, company_id=None):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def list_products1(request):
     company_id = request.query_params.get('company_id')  # Get company_id from query parameters
 
@@ -252,6 +265,7 @@ def list_products1(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def companies_by_category(request, category_id):
     try:
         # Fetch the category details
@@ -278,6 +292,7 @@ def companies_by_category(request, category_id):
     
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def products_by_company_and_category(request, category_id, company_id):
     # Filter products by the selected company and category
     products = Product.objects.filter(category_id=category_id, company_id=company_id)
@@ -286,6 +301,7 @@ def products_by_company_and_category(request, category_id, company_id):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def product_detail(request, product_id):
     try:
         # Retrieve the product by ID
@@ -299,42 +315,42 @@ def product_detail(request, product_id):
 
 
 @api_view(['POST'])
-  # This will allow unauthenticated access, but token is still required for authenticated users
-def add_to_favorites(request, product_id):
-    if request.user.is_authenticated:
-        print(f"Authenticated user: {request.user.username}")
-    else:
-        print("No authentication provided.")
-
+@permission_classes([IsAuthenticated])
+def toggle_favorite(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
     except Product.DoesNotExist:
         return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if the product is already in the user's favorites
+    favorite = Favorite.objects.filter(user=request.user, product=product).first()
 
-    if request.user.is_authenticated:
-        if Favorite.objects.filter(user=request.user, product=product).exists():
-            return Response({"message": "Product already in favorites"}, status=status.HTTP_400_BAD_REQUEST)
+    if favorite:
+        # If it exists, remove it (unfavorite)
+        favorite.delete()
+        # Return the product data with favorites set to False
+        product.favorites = False
+    else:
+        # If it doesn't exist, add it to favorites
+        Favorite.objects.create(user=request.user, product=product)
+        product.favorites = True
 
-        favorite = Favorite.objects.create(user=request.user, product=product)
-        favorite_serializer = FavoriteSerializer(favorite)
-        return Response(favorite_serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response({"message": "Product added to favorites (guest)"}, status=status.HTTP_200_OK)
-
-
+    # Serialize the product to return in the response
+    product_serializer = ProductSerializer(product, context={'request': request})
+    message = "Product removed from favorites" if not product.favorites else "Product added to favorites"
+    return Response({"product": product_serializer.data, "message": message}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
-def list_user_favorites(request, user_id):
-    # Check if the user is authenticated
-    if not request.user.is_authenticated:
-        return Response({"error": "Authentication required"}, status=status.HTTP_403_FORBIDDEN)
-
-    # Get all favorite products for the user
-    favorites = Favorite.objects.filter(user_id=user_id)
-    # Extract products from the favorites
-    favorite_products = [favorite.product for favorite in favorites]
-
-    # Serialize the products
-    product_serializer = ProductSerializer(favorite_products, many=True)
-    return Response(product_serializer.data, status=status.HTTP_200_OK)
+@permission_classes([IsAuthenticated])  # Ensure only authenticated users can access
+def favorite_list(request):
+    # Get all favorite products for the authenticated user
+    favorites = Favorite.objects.filter(user=request.user)
+    
+    # Get the corresponding product objects for these favorites
+    products = [favorite.product for favorite in favorites]
+    
+    # Serialize the product data
+    product_serializer = ProductSerializer(products, many=True, context={'request': request})
+    
+    return Response({"favorites": product_serializer.data}, status=status.HTTP_200_OK)
