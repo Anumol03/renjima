@@ -19,6 +19,23 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from myapp.views import *
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
+# Define the schema view
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Your API",
+      default_version='v1',
+      description="Test description",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="contact@yourapi.local"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -56,6 +73,9 @@ urlpatterns = [
 
     path('product/<int:product_id>/add_to_favorites/', toggle_favorite, name='add_to_favorites'),
     path('user/favorites/', favorite_list, name='list_user_favorites'),
+
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger-ui'),  # Swagger UI
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='redoc'),  # ReDoc UI (optional)
  
 
 ]
